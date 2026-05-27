@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}— Vendas{% endblock %}
+{% block page_title %}Vendas{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('relatorios.index') }}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}"
+     class="btn btn-outline-secondary btn-sm me-2">
+    <i class="bi bi-file-earmark-pdf me-1"></i> Relatório PDF
+  </a>
+  <a href="{{ url_for('vendas.nova') }}" class="btn btn-verde btn-sm">
+    <i class="bi bi-plus-lg me-1"></i> Nova Venda
+  </a>
+{% endblock %}
+
+{% block content %}
+
+<!-- FILTROS -->
+<div class="panel-card mb-3">
+  <div class="p-3">
+    <form method="GET" class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label mb-1" style="font-size:0.78rem;font-weight:600">Data inicial</label>
+        <input type="date" name="data_inicio" class="form-control form-control-sm" value="{{ data_inicio }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label mb-1" style="font-size:0.78rem;font-weight:600">Data final</label>
+        <input type="date" name="data_fim" class="form-control form-control-sm" value="{{ data_fim }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label mb-1" style="font-size:0.78rem;font-weight:600">Forma de pagamento</label>
+        <select name="forma_pagamento" class="form-select form-select-sm">
+          <option value="">Todas</option>
+          <option value="dinheiro" {% if forma_pagamento == 'dinheiro' %}selected{% endif %}>Dinheiro</option>
+          <option value="cartao" {% if forma_pagamento == 'cartao' %}selected{% endif %}>Cartão</option>
+          <option value="pix" {% if forma_pagamento == 'pix' %}selected{% endif %}>Pix</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-flex gap-2">
+        <button type="submit" class="btn btn-verde btn-sm flex-fill">
+          <i class="bi bi-funnel me-1"></i> Filtrar
+        </button>
+        <a href="{{ url_for('vendas.listar') }}" class="btn btn-outline-secondary btn-sm">Limpar</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- RESUMO -->
+<div class="row g-3 mb-3">
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-label">Faturamento do período</div>
+      <div class="stat-value mt-1">R$ {{ '%.2f'|format(total_periodo) }}</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-label">Total de vendas</div>
+      <div class="stat-value mt-1">{{ vendas|length }}</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-label">Ticket médio</div>
+      <div class="stat-value mt-1">R$ {{ '%.2f'|format(ticket_medio) }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- TABELA -->
+<div class="panel-card">
+  <div class="panel-header">{{ vendas|length }} venda(s) no período</div>
+  <table class="table table-hover mb-0">
+    <thead>
+      <tr><th>#</th><th>Data / Hora</th><th>Cliente</th><th>Itens</th><th>Pagamento</th><th>Total</th><th>Status</th><th>Ações</th></tr>
+    </thead>
+    <tbody>
+      {% for v in vendas %}
+      <tr>
+        <td class="fw-bold text-muted">#{{ v.id }}</td>
+        <td>{{ v.data_venda.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>{{ v.cliente.nome if v.cliente else '—' }}</td>
+        <td>{{ v.itens|length }} iten(s)</td>
+        <td>
+          <span class="badge
+            {% if v.forma_pagamento == 'cartao' %}bg-primary
+            {% elif v.forma_pagamento == 'pix' %}bg-success
+            {% else %}bg-secondary{% endif %}">
+            {{ v.forma_pagamento|capitalize }}
+          </span>
+        </td>
+        <td class="fw-semibold">R$ {{ '%.2f'|format(v.total) }}</td>
+        <td><span class="badge badge-ativo">✓ Concluída</span></td>
+        <td>
+          <a href="{{ url_for('vendas.ver', id=v.id) }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-eye"></i>
+          </a>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="8" class="text-center text-muted py-4">Nenhuma venda no período.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

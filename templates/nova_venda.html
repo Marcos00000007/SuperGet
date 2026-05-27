@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% block title %}— Nova Venda{% endblock %}
+{% block page_title %}Nova Venda{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('vendas.listar') }}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i> Voltar
+  </a>
+{% endblock %}
+
+{% block content %}
+<form method="POST" id="formVenda">
+  <div class="row g-3">
+
+    <!-- PAINEL ESQUERDO: Produtos -->
+    <div class="col-md-8">
+      <div class="panel-card">
+        <div class="panel-header d-flex justify-content-between align-items-center">
+          <span><i class="bi bi-cart me-2"></i>Itens da Venda</span>
+          <button type="button" class="btn btn-verde btn-sm" onclick="adicionarItem()">
+            <i class="bi bi-plus-lg me-1"></i> Adicionar Item
+          </button>
+        </div>
+        <div class="p-3">
+          <div id="itens-container">
+            <!-- Item inicial -->
+            <div class="item-venda border rounded p-3 mb-2 bg-light" id="item-0">
+              <div class="row g-2 align-items-end">
+                <div class="col-md-6">
+                  <label class="form-label" style="font-size:0.8rem">Produto</label>
+                  <select name="produto_id[]" class="form-select form-select-sm select-produto" required>
+                    <option value="">Selecione um produto...</option>
+                    {% for p in produtos %}
+                      <option value="{{ p.id }}" data-preco="{{ p.preco_venda }}" data-estoque="{{ p.estoque_atual }}">
+                        {{ p.nome }} — R$ {{ '%.2f'|format(p.preco_venda) }} ({{ p.estoque_atual }} un.)
+                      </option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label" style="font-size:0.8rem">Qtd.</label>
+                  <input type="number" name="quantidade[]" class="form-control form-control-sm input-qtd"
+                         min="1" value="1" required>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label" style="font-size:0.8rem">Subtotal</label>
+                  <input type="text" class="form-control form-control-sm subtotal-display"
+                         readonly placeholder="R$ 0,00">
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                  <button type="button" class="btn btn-outline-danger btn-sm w-100"
+                          onclick="removerItem(this)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAINEL DIREITO: Resumo e pagamento -->
+    <div class="col-md-4">
+      <div class="panel-card mb-3">
+        <div class="panel-header">Cliente e Pagamento</div>
+        <div class="p-3">
+          <div class="mb-3">
+            <label class="form-label">Cliente (opcional)</label>
+            <select name="cliente_id" class="form-select form-select-sm">
+              <option value="">— Venda sem identificação —</option>
+              {% for c in clientes %}
+                <option value="{{ c.id }}">{{ c.nome }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Forma de pagamento *</label>
+            <select name="forma_pagamento" class="form-select form-select-sm" required>
+              <option value="">Selecione...</option>
+              <option value="dinheiro">Dinheiro</option>
+              <option value="cartao">Cartão</option>
+              <option value="pix">Pix</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-header">Resumo</div>
+        <div class="p-3">
+          <div class="d-flex justify-content-between mb-2" style="font-size:0.9rem">
+            <span class="text-muted">Subtotal</span>
+            <span id="resumo-total">R$ 0,00</span>
+          </div>
+          <hr>
+          <div class="d-flex justify-content-between fw-bold">
+            <span>Total</span>
+            <span id="resumo-total-final" style="color:#1a7a3c;font-size:1.2rem">R$ 0,00</span>
+          </div>
+          <button type="submit" class="btn btn-verde w-100 mt-3">
+            <i class="bi bi-check-circle me-1"></i> Finalizar Venda
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let itemCount = 1;
+
+function adicionarItem() {
+  const container = document.getElementById('itens-container');
+  const templateItem = document.getElementById('item-0');
+  const novoItem = templateItem.cloneNode(true);
+  novoItem.id = `item-${itemCount++}`;
+  novoItem.querySelector('.select-produto').value = '';
+  novoItem.querySelector('.input-qtd').value = 1;
+  novoItem.querySelector('.subtotal-display').value = '';
+  bindItemEvents(novoItem);
+  container.appendChild(novoItem);
+}
+
+function removerItem(btn) {
+  const items = document.querySelectorAll('.item-venda');
+  if (items.length <= 1) {
+    alert('A venda deve ter ao menos um item.');
+    return;
+  }
+  btn.closest('.item-venda').remove();
+  calcularTotal();
+}
+
+function calcularSubtotal(item) {
+  const select = item.querySelector('.select-produto');
+  const qtd = parseInt(item.querySelector('.input-qtd').value) || 0;
+  const opcao = select.options[select.selectedIndex];
+  const preco = parseFloat(opcao?.dataset?.preco || 0);
+  const subtotal = preco * qtd;
+  item.querySelector('.subtotal-display').value =
+    subtotal > 0 ? `R$ ${subtotal.toFixed(2).replace('.', ',')}` : '';
+  return subtotal;
+}
+
+function calcularTotal() {
+  let total = 0;
+  document.querySelectorAll('.item-venda').forEach(item => {
+    total += calcularSubtotal(item);
+  });
+  const fmt = `R$ ${total.toFixed(2).replace('.', ',')}`;
+  document.getElementById('resumo-total').textContent = fmt;
+  document.getElementById('resumo-total-final').textContent = fmt;
+}
+
+function bindItemEvents(item) {
+  item.querySelector('.select-produto').addEventListener('change', calcularTotal);
+  item.querySelector('.input-qtd').addEventListener('input', calcularTotal);
+}
+
+// Bind no item inicial
+bindItemEvents(document.getElementById('item-0'));
+</script>
+{% endblock %}

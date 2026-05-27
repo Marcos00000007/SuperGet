@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}— Relatório de Vendas{% endblock %}
+{% block page_title %}Relatório de Vendas{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('relatorios.gerar_pdf') }}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}"
+     class="btn btn-verde btn-sm" target="_blank">
+    <i class="bi bi-file-earmark-pdf me-1"></i> Baixar PDF
+  </a>
+{% endblock %}
+
+{% block content %}
+
+<!-- FILTRO -->
+<div class="panel-card mb-3">
+  <div class="p-3">
+    <form method="GET" class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label mb-1" style="font-size:0.78rem;font-weight:600">Data inicial</label>
+        <input type="date" name="data_inicio" class="form-control form-control-sm" value="{{ data_inicio }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label mb-1" style="font-size:0.78rem;font-weight:600">Data final</label>
+        <input type="date" name="data_fim" class="form-control form-control-sm" value="{{ data_fim }}">
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-verde btn-sm">
+          <i class="bi bi-funnel me-1"></i> Gerar Relatório
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- RESUMO DO PERÍODO -->
+<div class="row g-3 mb-3">
+  <div class="col-md-3">
+    <div class="stat-card text-center">
+      <div class="stat-value">{{ total_vendas }}</div>
+      <div class="stat-label">Total de vendas</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card text-center">
+      <div class="stat-value" style="font-size:1.3rem">R$ {{ '%.2f'|format(faturamento) }}</div>
+      <div class="stat-label">Faturamento total</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card text-center">
+      <div class="stat-value" style="font-size:1.3rem">R$ {{ '%.2f'|format(ticket_medio) }}</div>
+      <div class="stat-label">Ticket médio</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card text-center">
+      <div class="stat-value">{{ total_itens }}</div>
+      <div class="stat-label">Itens vendidos</div>
+    </div>
+  </div>
+</div>
+
+<!-- DETALHAMENTO -->
+<div class="panel-card">
+  <div class="panel-header d-flex justify-content-between align-items-center">
+    <span>Detalhamento das Vendas — {{ data_inicio }} a {{ data_fim }}</span>
+  </div>
+  <table class="table table-hover mb-0">
+    <thead>
+      <tr><th>#</th><th>Data / Hora</th><th>Cliente</th><th>Itens</th><th>Pagamento</th><th>Total</th></tr>
+    </thead>
+    <tbody>
+      {% for v in vendas %}
+      <tr>
+        <td class="fw-bold text-muted">#{{ v.id }}</td>
+        <td>{{ v.data_venda.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>{{ v.cliente.nome if v.cliente else '—' }}</td>
+        <td>{{ v.itens|length }}</td>
+        <td>{{ v.forma_pagamento|capitalize }}</td>
+        <td class="fw-semibold">R$ {{ '%.2f'|format(v.total) }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="text-center text-muted py-4">Nenhuma venda no período selecionado.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

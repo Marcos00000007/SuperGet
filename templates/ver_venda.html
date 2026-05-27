@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}— Venda #{{ venda.id }}{% endblock %}
+{% block page_title %}Venda #{{ venda.id }}{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('vendas.listar') }}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i> Voltar
+  </a>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-md-8">
+    <div class="panel-card">
+      <div class="panel-header">Itens da Venda</div>
+      <table class="table mb-0">
+        <thead>
+          <tr><th>Produto</th><th>Qtd.</th><th>Preço Unit.</th><th>Subtotal</th></tr>
+        </thead>
+        <tbody>
+          {% for item in venda.itens %}
+          <tr>
+            <td>{{ item.produto.nome }}</td>
+            <td>{{ item.quantidade }}</td>
+            <td>R$ {{ '%.2f'|format(item.preco_unitario) }}</td>
+            <td class="fw-semibold">R$ {{ '%.2f'|format(item.subtotal) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" class="text-end fw-bold">Total</td>
+            <td class="fw-bold" style="color:#1a7a3c;font-size:1.1rem">
+              R$ {{ '%.2f'|format(venda.total) }}
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="panel-card">
+      <div class="panel-header">Informações</div>
+      <div class="p-3">
+        <dl class="row mb-0" style="font-size:0.88rem">
+          <dt class="col-5 text-muted">Venda nº</dt>
+          <dd class="col-7 fw-semibold">#{{ venda.id }}</dd>
+
+          <dt class="col-5 text-muted">Data/Hora</dt>
+          <dd class="col-7">{{ venda.data_venda.strftime('%d/%m/%Y %H:%M') }}</dd>
+
+          <dt class="col-5 text-muted">Cliente</dt>
+          <dd class="col-7">{{ venda.cliente.nome if venda.cliente else '—' }}</dd>
+
+          <dt class="col-5 text-muted">Pagamento</dt>
+          <dd class="col-7">
+            <span class="badge
+              {% if venda.forma_pagamento == 'cartao' %}bg-primary
+              {% elif venda.forma_pagamento == 'pix' %}bg-success
+              {% else %}bg-secondary{% endif %}">
+              {{ venda.forma_pagamento|capitalize }}
+            </span>
+          </dd>
+
+          <dt class="col-5 text-muted">Registrado por</dt>
+          <dd class="col-7">{{ venda.usuario.nome }}</dd>
+
+          <dt class="col-5 text-muted">Status</dt>
+          <dd class="col-7"><span class="badge badge-ativo">✓ Concluída</span></dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}— Categorias{% endblock %}
+{% block page_title %}Categorias{% endblock %}
+
+{% block topbar_actions %}
+  <button class="btn btn-verde btn-sm" data-bs-toggle="modal" data-bs-target="#modalNovaCategoria">
+    <i class="bi bi-plus-lg me-1"></i> Nova Categoria
+  </button>
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-header">{{ categorias|length }} categorias cadastradas</div>
+  <table class="table table-hover mb-0">
+    <thead>
+      <tr><th>Nome</th><th>Descrição</th><th>Produtos</th><th>Ações</th></tr>
+    </thead>
+    <tbody>
+      {% for cat in categorias %}
+      <tr>
+        <td class="fw-semibold">{{ cat.nome }}</td>
+        <td class="text-muted">{{ cat.descricao or '—' }}</td>
+        <td><span class="badge bg-secondary">{{ cat.produtos|length }}</span></td>
+        <td>
+          <button class="btn btn-outline-secondary btn-sm me-1"
+                  data-bs-toggle="modal" data-bs-target="#modalEditar{{ cat.id }}">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <form method="POST" action="{{ url_for('categorias.excluir', id=cat.id) }}"
+                style="display:inline"
+                onsubmit="return confirm('Excluir categoria {{ cat.nome }}?')">
+            <button type="submit" class="btn btn-outline-danger btn-sm">
+              <i class="bi bi-trash"></i>
+            </button>
+          </form>
+        </td>
+      </tr>
+
+      <!-- Modal Editar -->
+      <div class="modal fade" id="modalEditar{{ cat.id }}" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h6 class="modal-title">Editar Categoria</h6>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('categorias.editar', id=cat.id) }}">
+              <div class="modal-body">
+                <div class="mb-2">
+                  <label class="form-label">Nome *</label>
+                  <input type="text" name="nome" class="form-control form-control-sm"
+                         value="{{ cat.nome }}" required>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Descrição</label>
+                  <input type="text" name="descricao" class="form-control form-control-sm"
+                         value="{{ cat.descricao or '' }}">
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-verde btn-sm">Salvar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      {% else %}
+      <tr><td colspan="4" class="text-center text-muted py-4">Nenhuma categoria cadastrada.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal Nova Categoria -->
+<div class="modal fade" id="modalNovaCategoria" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title">Nova Categoria</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('categorias.nova') }}">
+        <div class="modal-body">
+          <div class="mb-2">
+            <label class="form-label">Nome *</label>
+            <input type="text" name="nome" class="form-control form-control-sm" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Descrição</label>
+            <input type="text" name="descricao" class="form-control form-control-sm">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-verde btn-sm">Cadastrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

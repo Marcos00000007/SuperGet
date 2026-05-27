@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}— Clientes{% endblock %}
+{% block page_title %}Clientes{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('clientes.novo') }}" class="btn btn-verde btn-sm">
+    <i class="bi bi-plus-lg me-1"></i> Novo Cliente
+  </a>
+{% endblock %}
+
+{% block content %}
+<div class="panel-card mb-3">
+  <div class="p-3">
+    <form method="GET" class="row g-2">
+      <div class="col-md-5">
+        <input type="text" name="busca" class="form-control form-control-sm"
+               placeholder="Buscar por nome..." value="{{ busca }}">
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-verde btn-sm">
+          <i class="bi bi-search me-1"></i> Buscar
+        </button>
+        <a href="{{ url_for('clientes.listar') }}" class="btn btn-outline-secondary btn-sm ms-1">Limpar</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="panel-card">
+  <div class="panel-header">{{ clientes|length }} cliente(s)</div>
+  <table class="table table-hover mb-0">
+    <thead>
+      <tr><th>Nome</th><th>CPF</th><th>Telefone</th><th>E-mail</th><th>Ações</th></tr>
+    </thead>
+    <tbody>
+      {% for c in clientes %}
+      <tr>
+        <td class="fw-semibold">{{ c.nome }}</td>
+        <td class="text-muted font-monospace" style="font-size:0.82rem">
+          {% if c.cpf %}
+            {{ c.cpf[:3] }}.{{ c.cpf[3:6] }}.{{ c.cpf[6:9] }}-{{ c.cpf[9:] }}
+          {% else %}—{% endif %}
+        </td>
+        <td>{{ c.telefone or '—' }}</td>
+        <td>{{ c.email or '—' }}</td>
+        <td>
+          <a href="{{ url_for('clientes.editar', id=c.id) }}"
+             class="btn btn-outline-secondary btn-sm me-1">
+            <i class="bi bi-pencil"></i>
+          </a>
+          <form method="POST" action="{{ url_for('clientes.excluir', id=c.id) }}"
+                style="display:inline"
+                onsubmit="return confirm('Excluir cliente {{ c.nome }}?')">
+            <button type="submit" class="btn btn-outline-danger btn-sm">
+              <i class="bi bi-trash"></i>
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="text-center text-muted py-4">Nenhum cliente cadastrado.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}— {{ 'Editar' if fornecedor else 'Novo' }} Fornecedor{% endblock %}
+{% block page_title %}{{ 'Editar Fornecedor' if fornecedor else 'Novo Fornecedor' }}{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('fornecedores.listar') }}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i> Voltar
+  </a>
+{% endblock %}
+
+{% block content %}
+<div class="panel-card" style="max-width:600px">
+  <div class="panel-header">Dados do Fornecedor</div>
+  <div class="p-3">
+    <form method="POST">
+      <div class="mb-3">
+        <label class="form-label">Razão Social *</label>
+        <input type="text" name="razao_social" class="form-control"
+               value="{{ fornecedor.razao_social if fornecedor else '' }}" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">CNPJ *</label>
+        <input type="text" name="cnpj" class="form-control" maxlength="18"
+               value="{{ fornecedor.cnpj if fornecedor else '' }}"
+               placeholder="00.000.000/0000-00"
+               {% if fornecedor %}readonly{% endif %}>
+        {% if fornecedor %}<small class="text-muted">CNPJ não pode ser alterado.</small>{% endif %}
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Telefone</label>
+        <input type="text" name="telefone" class="form-control"
+               value="{{ fornecedor.telefone if fornecedor else '' }}"
+               placeholder="(11) 99999-9999">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">E-mail</label>
+        <input type="email" name="email" class="form-control"
+               value="{{ fornecedor.email if fornecedor else '' }}">
+      </div>
+      <div class="d-flex gap-2 justify-content-end">
+        <a href="{{ url_for('fornecedores.listar') }}" class="btn btn-outline-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-verde">
+          <i class="bi bi-check-lg me-1"></i>
+          {{ 'Salvar Alterações' if fornecedor else 'Cadastrar Fornecedor' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

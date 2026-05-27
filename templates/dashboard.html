@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block title %}— Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block topbar_actions %}
+  <span class="text-muted" style="font-size:0.82rem">
+    <i class="bi bi-calendar3 me-1"></i>
+    {% set dias = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'] %}
+    {{ now().strftime('%d/%m/%Y') if now is defined else '' }}
+  </span>
+{% endblock %}
+
+{% block content %}
+
+<!-- ALERTA ESTOQUE -->
+{% if estoque_baixo > 0 or sem_estoque > 0 %}
+<div class="alert alert-warning d-flex align-items-center gap-2 mb-3" style="font-size:0.87rem">
+  <i class="bi bi-exclamation-triangle-fill"></i>
+  <span>
+    {% if sem_estoque > 0 %}<strong>{{ sem_estoque }} produto(s) sem estoque</strong> e {% endif %}
+    {% if estoque_baixo > 0 %}<strong>{{ estoque_baixo }} produto(s) com estoque baixo</strong>{% endif %}
+    — <a href="{{ url_for('produtos.listar') }}?situacao=sem_estoque" class="alert-link">Ver produtos</a>
+  </span>
+</div>
+{% endif %}
+
+<!-- CARDS DE ESTATÍSTICAS -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#dcfce7; color:#15803d">
+        <i class="bi bi-box-seam"></i>
+      </div>
+      <div class="stat-value">{{ total_produtos }}</div>
+      <div class="stat-label">Produtos cadastrados</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#dbeafe; color:#1d4ed8">
+        <i class="bi bi-currency-dollar"></i>
+      </div>
+      <div class="stat-value">R$ {{ '%.2f'|format(faturamento_hoje) }}</div>
+      <div class="stat-label">Faturamento hoje</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#fef9c3; color:#854d0e">
+        <i class="bi bi-exclamation-circle"></i>
+      </div>
+      <div class="stat-value">{{ estoque_baixo }}</div>
+      <div class="stat-label">Estoque baixo</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#fee2e2; color:#b91c1c">
+        <i class="bi bi-slash-circle"></i>
+      </div>
+      <div class="stat-value">{{ sem_estoque }}</div>
+      <div class="stat-label">Sem estoque</div>
+    </div>
+  </div>
+</div>
+
+<!-- ÚLTIMAS VENDAS -->
+<div class="panel-card">
+  <div class="panel-header d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-clock-history me-2"></i>Últimas Vendas</span>
+    <a href="{{ url_for('vendas.listar') }}" class="btn btn-sm btn-verde">Ver todas</a>
+  </div>
+  <div class="p-0">
+    {% if ultimas_vendas %}
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>#</th><th>Data</th><th>Cliente</th><th>Total</th><th>Pagamento</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for venda in ultimas_vendas %}
+        <tr>
+          <td class="text-muted fw-bold">#{{ venda.id }}</td>
+          <td>{{ venda.data_venda.strftime('%d/%m %H:%M') }}</td>
+          <td>{{ venda.cliente.nome if venda.cliente else '—' }}</td>
+          <td class="fw-semibold">R$ {{ '%.2f'|format(venda.total) }}</td>
+          <td>{{ venda.forma_pagamento|capitalize }}</td>
+          <td><span class="badge badge-ativo">✓ Concluída</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="text-center text-muted py-4">Nenhuma venda registrada ainda.</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ATALHOS -->
+<div class="row g-3 mt-3">
+  <div class="col-md-4">
+    <a href="{{ url_for('vendas.nova') }}" class="text-decoration-none">
+      <div class="stat-card d-flex align-items-center gap-3" style="cursor:pointer">
+        <div class="stat-icon" style="background:#dcfce7; color:#15803d; margin:0">
+          <i class="bi bi-plus-circle"></i>
+        </div>
+        <div>
+          <div class="fw-semibold" style="font-size:0.9rem">Nova Venda</div>
+          <div class="text-muted" style="font-size:0.78rem">Registrar nova venda</div>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-4">
+    <a href="{{ url_for('produtos.novo') }}" class="text-decoration-none">
+      <div class="stat-card d-flex align-items-center gap-3" style="cursor:pointer">
+        <div class="stat-icon" style="background:#dbeafe; color:#1d4ed8; margin:0">
+          <i class="bi bi-box-seam"></i>
+        </div>
+        <div>
+          <div class="fw-semibold" style="font-size:0.9rem">Novo Produto</div>
+          <div class="text-muted" style="font-size:0.78rem">Cadastrar produto</div>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-4">
+    <a href="{{ url_for('relatorios.index') }}" class="text-decoration-none">
+      <div class="stat-card d-flex align-items-center gap-3" style="cursor:pointer">
+        <div class="stat-icon" style="background:#f3e8ff; color:#7c3aed; margin:0">
+          <i class="bi bi-file-earmark-bar-graph"></i>
+        </div>
+        <div>
+          <div class="fw-semibold" style="font-size:0.9rem">Relatório PDF</div>
+          <div class="text-muted" style="font-size:0.78rem">Gerar relatório de vendas</div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+{% endblock %}
