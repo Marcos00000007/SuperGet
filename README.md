@@ -116,7 +116,7 @@ SECRET_KEY=supergest_chave_secreta_2026
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=root
-DB_PASSWORD=SUA_SENHA_AQUI
+DB_PASSWORD=Não será informada aqui
 DB_NAME=supergest
 ```
 

@@ -4,11 +4,11 @@ from models.usuario import Usuario
 
 auth_bp = Blueprint('auth', __name__)
 
-@auth_bp.route('/')
+@auth_bp.route('/', methods=['GET', 'POST'])
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('auth.dashboard'))
 
     if request.method == 'POST':
         email = request.form.get('email', '').strip()
@@ -19,7 +19,7 @@ def login():
         if usuario and usuario.verificar_senha(senha):
             login_user(usuario)
             flash(f'Bem-vindo, {usuario.nome}!', 'success')
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('auth.dashboard'))        
         else:
             flash('E-mail ou senha incorretos.', 'danger')
 
